@@ -24,8 +24,9 @@ class TdmlRunner(testClassLoader: ClassLoader, loggers: Array[Logger]) extends o
     val s = sc.getDeclaredConstructor().newInstance().asInstanceOf[TdmlSuite]
 
     val path = Paths.get(s.path())
+    val tests = s.parserTestNames()
     loggers.foreach(_.info(s"TDML Suite: ${s.path()}"))
-    s.parserTestNames().map(p => s"\t- $p").foreach(m => loggers.foreach(_.info(m)))
+    tests.map(p => s"\t- $p").foreach(m => loggers.foreach(_.info(m)))
 
     val (dir: String, file: String) = Option(path.getParent) -> Option(path.getFileName) match {
       case (Some(d), Some(f)) => d.toString -> f.toString
@@ -39,7 +40,7 @@ class TdmlRunner(testClassLoader: ClassLoader, loggers: Array[Logger]) extends o
     val rctor = rc.getDeclaredConstructor(classOf[String], classOf[String])
     val runner = rctor.newInstance(dir, file)
 
-    s.parserTestNames().foreach { tname =>
+    tests.foreach { tname =>
       loggers.foreach(_.debug(s"Running parser test: $tname"))
 
       try {

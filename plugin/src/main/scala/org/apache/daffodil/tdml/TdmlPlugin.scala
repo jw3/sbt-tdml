@@ -56,7 +56,7 @@ object TdmlPlugin extends AutoPlugin {
   private def createGenAllTask(targetDir: File, tdmls: Seq[File], tdmlExt: String, log: Logger): Seq[File] = {
     tdmls.map{f =>
       val suiteName = "Tdml_" + f.getName.stripSuffix(s".$tdmlExt").map(cleanFilename)
-      log.out(s"Generating TDML Suite: $suiteName")
+      log.debug(s"Generating TDML Suite: $suiteName")
 
       val file: java.io.File = Paths.get(targetDir.getAbsolutePath, s"$suiteName.scala").toFile
       IO.write(file, s"""class $suiteName extends org.apache.daffodil.tdml.TdmlSuite {
