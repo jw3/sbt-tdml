@@ -6,6 +6,7 @@ import sbt.plugins.JvmPlugin
 import sbt.{AutoPlugin, Configuration, Def, File, Logger, Setting, TaskKey, Test, inConfig, taskKey}
 
 import java.nio.file.Paths
+import scala.reflect.io.Directory
 
 object TdmlPlugin extends AutoPlugin {
   override def trigger = allRequirements
@@ -46,10 +47,11 @@ object TdmlPlugin extends AutoPlugin {
     sourceGenerators += tdmlGenAll
   )
 
-  private def createListAllTask(resourceDir: File, tdmlExt: String, log: Logger): Seq[File] =
-    resourceDir.listFiles(_.getName.endsWith(tdmlExt)).map(f =>
-      Paths.get(f.getPath.stripPrefix(resourceDir.getPath).stripPrefix("/")).toFile
-    )
+  private def createListAllTask(resourceDir: File, tdmlExt: String, log: Logger): Seq[File] = {
+    Directory(resourceDir).deepList().filter(_.isFile).filter(_.name.endsWith(tdmlExt)).map(f =>
+      new File(f.path.stripPrefix(resourceDir.getPath).stripPrefix("/"))
+    ).toSeq
+  }
 
   private def createGenAllTask(targetDir: File, tdmls: Seq[File], tdmlExt: String, log: Logger): Seq[File] = {
     tdmls.map{f =>

@@ -24,9 +24,7 @@ class TdmlRunner(testClassLoader: ClassLoader, loggers: Array[Logger]) extends o
     val s = sc.getDeclaredConstructor().newInstance().asInstanceOf[TdmlSuite]
 
     val path = Paths.get(s.path())
-    loggers.foreach(_.info(s"TDML resource path: ${s.path()}"))
-
-    loggers.foreach(_.info(s"TDML Suite: $cname"))
+    loggers.foreach(_.info(s"TDML Suite: ${s.path()}"))
     s.parserTestNames().map(p => s"\t- $p").foreach(m => loggers.foreach(_.info(m)))
 
     val (dir: String, file: String) = Option(path.getParent) -> Option(path.getFileName) match {
@@ -34,7 +32,7 @@ class TdmlRunner(testClassLoader: ClassLoader, loggers: Array[Logger]) extends o
       case (None, Some(f)) => "" -> f.toString
       case _ => throw new RuntimeException(s"invalid path: ${path}")
     }
-    loggers.foreach(_.info(s"creating Runner($dir, $file)"))
+    loggers.foreach(_.debug(s"creating Runner($dir, $file)"))
 
     // the runner needs loaded from the tcl
     val rc = testClassLoader.loadClass(classOf[Runner].getName).asInstanceOf[Class[Runner]]
