@@ -2,9 +2,8 @@ package org.apache.daffodil.tdml
 
 import sbt.Keys._
 import sbt.io.IO
-import sbt.librarymanagement.Resolver
 import sbt.plugins.JvmPlugin
-import sbt.{AutoPlugin, Configuration, Def, File, Logger, Resolvers, Setting, TaskKey, Test, inConfig, singleFileFinder, taskKey}
+import sbt.{AutoPlugin, Configuration, Def, File, Logger, Setting, TaskKey, Test, inConfig, taskKey}
 
 import java.nio.file.Paths
 
@@ -41,24 +40,28 @@ object TdmlPlugin extends AutoPlugin {
     tdmlGenAll := createGenAllTask(
       sourceManaged.value,
       tdmlListAll.value,
+      tdmlDescriptorExt.value,
       streams.value.log
     ),
     sourceGenerators += tdmlGenAll
   )
 
   private def createListAllTask(resourceDir: File, tdmlExt: String, log: Logger): Seq[File] =
-    resourceDir.listFiles(_.getName.endsWith(tdmlExt))
+    resourceDir.listFiles(_.getName.endsWith(tdmlExt)).map(f =>
+      Paths.get(f.getPath.stripPrefix(resourceDir.getPath)).toFile
+    )
 
-  private def createGenAllTask(targetDir: File, tdmls: Seq[File], log: Logger): Seq[File] = {
-    tdmls.foreach(f => log.out(s"TDML: ${f.getName}"))
-    val tdmlsString = tdmls.map(p => s""""${p.getPath}"""").mkString(",")
-    val file: java.io.File = Paths.get(targetDir.getAbsolutePath, "GenSuite.scala").toFile
-    IO.write(file, s"""class GenSuite extends org.apache.daffodil.tdml.TestSuiteToo {
-                     |  def tdmls = Seq($tdmlsString)
-                     |}""".stripMargin)
+  private def createGenAllTask(targetDir: File, tdmls: Seq[File], tdmlExt: String, log: Logger): Seq[File] = {
+    tdmls.map{f =>
+      val suiteName = f.getName.stripSuffix(s".$tdmlExt")
+      log.out(s"Generating TDML Suite: $suiteName")
 
-    println(s"======= generated: ${file.getPath}")
-    Seq(file)
+      val file: java.io.File = Paths.get(targetDir.getAbsolutePath, s"$suiteName.scala").toFile
+      IO.write(file, s"""class $suiteName extends org.apache.daffodil.tdml.TdmlSuite {
+                        |  val path = "${f.getPath}"
+                        |}""".stripMargin)
+      file
+    }
   }
 }
 

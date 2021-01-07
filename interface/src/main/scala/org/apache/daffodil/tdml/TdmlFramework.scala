@@ -6,7 +6,7 @@ import org.scalatools.testing._
 import java.nio.file.Paths
 
 class TdmlSuiteFingerprint extends SubclassFingerprint {
-  val superClassName: String = "org.apache.daffodil.tdml.TestSuiteToo"
+  val superClassName: String = classOf[TdmlSuite].getName
   val isModule: Boolean = false
 }
 
@@ -14,29 +14,34 @@ final class TdmlFramework extends Framework {
   def name(): String = "TDML"
   def tests(): Array[Fingerprint] = Array(new TdmlSuiteFingerprint)
 
-  def testRunner(testClassLoader: ClassLoader, loggers: Array[Logger]): testing.Runner = {
-    println("((((((((((((( creating the runner ))))))))))))))))")
+  def testRunner(testClassLoader: ClassLoader, loggers: Array[Logger]): testing.Runner =
     new TdmlRunner(testClassLoader, loggers)
-  }
 }
 
 class TdmlRunner(testClassLoader: ClassLoader, loggers: Array[Logger]) extends org.scalatools.testing.Runner {
-  def run(testClassName: String, fingerprint: TestFingerprint, eventHandler: EventHandler, args: Array[String]) = {
-    loggers.foreach(_.info(s"=== TDML test: $testClassName"))
+  def run(cname: String, fp: TestFingerprint, events: EventHandler, args: Array[String]): Unit = {
+    val sc = testClassLoader.loadClass(cname)
+    val s = sc.getDeclaredConstructor().newInstance().asInstanceOf[TdmlSuite]
 
-    val sc = testClassLoader.loadClass(testClassName)
-    val s = sc.getDeclaredConstructor().newInstance().asInstanceOf[TestSuiteToo]
-    println("=== TDML Runner:")
-    s.tdmls.map(p => s"\t$p").foreach(println)
+    loggers.foreach(_.info(s"TDML Suite: $cname"))
+    s.parserTestNames().map(p => s"\t- $p").foreach(m => loggers.foreach(_.info(m)))
 
-    val path = Paths.get(testClassName)
+    val path = Paths.get(s.path())
+    loggers.foreach(_.debug(s"creating Runner(${path.getParent.toString}, ${path.getFileName.toString})"))
     val runner = Runner(path.getParent.toString, path.getFileName.toString)
-    try {
-      runner.runOneTest("booleanDefault")
-      eventHandler.handle(ResultEvent.success(testClassName))
-    } catch {
-      case t: Throwable =>
-        eventHandler.handle(ResultEvent.failure(testClassName, t))
+
+    s.parserTestNames().foreach { tname =>
+      loggers.foreach(_.debug(s"Running parser test: $tname"))
+
+      try {
+        runner.runOneTest(tname)
+        events.handle(ResultEvent.success(cname))
+      } catch {
+        case t: Throwable =>
+          loggers.foreach(_.debug(t.getMessage))
+          events.handle(ResultEvent.failure(cname, t))
+      }
+      runner.reset
     }
   }
 }

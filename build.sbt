@@ -36,6 +36,7 @@ lazy val interface = (project in file("interface"))
     name := "sbt-tdml-interface",
     libraryDependencies ++= Seq(
       "org.apache.daffodil" %% "daffodil-tdml-lib" % "3.0.0",
+      "org.apache.daffodil" %% "daffodil-tdml-processor" % "3.0.0",
       "org.scala-sbt" % "test-interface" % "1.0"
     )
   )
