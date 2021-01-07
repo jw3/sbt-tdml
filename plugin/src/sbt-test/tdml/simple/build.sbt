@@ -3,7 +3,7 @@ lazy val root = (project in file("."))
     version := "0.1",
     scalaVersion := "2.12.12",
     libraryDependencies ++= Seq(
-      "org.apache.daffodil" %% "sbt-tdml-interface" % "0.1-SNAPSHOT" % Test
+      "org.apache.daffodil" %% "sbt-tdml-interface" % "0.1" % Test
     ),
   )
 

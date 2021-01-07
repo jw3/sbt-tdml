@@ -14,7 +14,7 @@ Reduce boilerplate by eliminating the TDML unit test companion class.
 ### Try it
 1. `sbt pubishLocal` from root project
 2. `sbt plugin/scripted` from root project
-3. `sbt -Dplugin.version=0.1-SNAPSHOT test` from test project
+3. `sbt -Dplugin.version=0.1 test` from test project
 
 #### output
 
