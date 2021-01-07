@@ -1,6 +1,6 @@
 lazy val commonSettings = Seq(
   organization := "org.apache.daffodil",
-  version := "0.1-SNAPSHOT",
+  version := "0.2-SNAPSHOT",
   scalaVersion := "2.12.12",
   scalacOptions := Seq(
     "-unchecked",
