@@ -13,7 +13,10 @@ lazy val commonSettings = Seq(
 
 lazy val api = (project in file("api"))
   .settings(
-    name := "sbt-tdml-api"
+    name := "sbt-tdml-api",
+    libraryDependencies ++= Seq(
+      "org.scala-lang.modules" %% "scala-xml" % "1.3.0"
+    )
   )
   .settings(commonSettings)
 

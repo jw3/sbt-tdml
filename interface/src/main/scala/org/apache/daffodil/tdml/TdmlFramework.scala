@@ -23,12 +23,23 @@ class TdmlRunner(testClassLoader: ClassLoader, loggers: Array[Logger]) extends o
     val sc = testClassLoader.loadClass(cname)
     val s = sc.getDeclaredConstructor().newInstance().asInstanceOf[TdmlSuite]
 
+    val path = Paths.get(s.path())
+    loggers.foreach(_.info(s"TDML resource path: ${s.path()}"))
+
     loggers.foreach(_.info(s"TDML Suite: $cname"))
     s.parserTestNames().map(p => s"\t- $p").foreach(m => loggers.foreach(_.info(m)))
 
-    val path = Paths.get(s.path())
-    loggers.foreach(_.debug(s"creating Runner(${path.getParent.toString}, ${path.getFileName.toString})"))
-    val runner = Runner(path.getParent.toString, path.getFileName.toString)
+    val (dir: String, file: String) = Option(path.getParent) -> Option(path.getFileName) match {
+      case (Some(d), Some(f)) => d.toString -> f.toString
+      case (None, Some(f)) => "" -> f.toString
+      case _ => throw new RuntimeException(s"invalid path: ${path}")
+    }
+    loggers.foreach(_.info(s"creating Runner($dir, $file)"))
+
+    // the runner needs loaded from the tcl
+    val rc = testClassLoader.loadClass(classOf[Runner].getName).asInstanceOf[Class[Runner]]
+    val rctor = rc.getDeclaredConstructor(classOf[String], classOf[String])
+    val runner = rctor.newInstance(dir, file)
 
     s.parserTestNames().foreach { tname =>
       loggers.foreach(_.debug(s"Running parser test: $tname"))

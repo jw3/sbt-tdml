@@ -48,12 +48,12 @@ object TdmlPlugin extends AutoPlugin {
 
   private def createListAllTask(resourceDir: File, tdmlExt: String, log: Logger): Seq[File] =
     resourceDir.listFiles(_.getName.endsWith(tdmlExt)).map(f =>
-      Paths.get(f.getPath.stripPrefix(resourceDir.getPath)).toFile
+      Paths.get(f.getPath.stripPrefix(resourceDir.getPath).stripPrefix("/")).toFile
     )
 
   private def createGenAllTask(targetDir: File, tdmls: Seq[File], tdmlExt: String, log: Logger): Seq[File] = {
     tdmls.map{f =>
-      val suiteName = f.getName.stripSuffix(s".$tdmlExt")
+      val suiteName = f.getName.stripSuffix(s".$tdmlExt").map(cleanFilename)
       log.out(s"Generating TDML Suite: $suiteName")
 
       val file: java.io.File = Paths.get(targetDir.getAbsolutePath, s"$suiteName.scala").toFile
@@ -62,6 +62,12 @@ object TdmlPlugin extends AutoPlugin {
                         |}""".stripMargin)
       file
     }
+  }
+
+  // todo;; find something to validate compilation unit names and replace this
+  private def cleanFilename(c: Char) = c match {
+    case '-' => '_'
+    case v => v
   }
 }
 
