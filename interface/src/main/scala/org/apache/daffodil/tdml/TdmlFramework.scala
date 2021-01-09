@@ -45,13 +45,19 @@ class TdmlRunner(testClassLoader: ClassLoader, loggers: Array[Logger]) extends o
 
       try {
         runner.runOneTest(tname)
-        events.handle(ResultEvent.success(cname))
+        events.handle(SbtTestEvent.success(cname))
       } catch {
         case t: Throwable =>
           loggers.foreach(_.debug(t.getMessage))
-          events.handle(ResultEvent.failure(cname, t))
+          events.handle(SbtTestEvent.failure(cname, t))
       }
       runner.reset
     }
   }
+}
+
+case class SbtTestEvent(result: Result, testName: String, description: String, error: Throwable) extends Event
+object SbtTestEvent {
+  def success(name: String): SbtTestEvent = SbtTestEvent(Result.Success, name, name, null)
+  def failure(name: String, t: Throwable): SbtTestEvent = SbtTestEvent(Result.Failure, name, name, t)
 }
