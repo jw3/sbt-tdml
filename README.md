@@ -3,15 +3,11 @@ sbt-tdml
 
 Reduce boilerplate by eliminating the TDML unit test companion class.
 
-### Two components
-1. Suite generating SBT plugin
-2. SBT test interface TDML runner
+### sbt components
+1. A test suite generating plugin
+2. A test interface for the generated suites
 
-#### Questions
-1. Are both components necessary?
-  - Is there value in the test interface?
-
-### Try it
+### try it
 1. `sbt pubishLocal` from root project
 2. `sbt plugin/scripted` from root project
 3. `sbt -Dplugin.version=0.2-SNAPSHOT test` from test project
